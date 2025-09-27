@@ -13,20 +13,123 @@
   <style>
     /* Optional: focus rings for accessibility */
     :focus { outline: 2px solid; outline-offset: 2px; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 230, 250, 0.65), transparent 55%),
+                  radial-gradient(circle at 80% 30%, rgba(255, 215, 180, 0.6), transparent 60%),
+                  linear-gradient(180deg, #1a0c24 0%, #351a3b 40%, #120414 100%);
+      color: #fdf6ff;
+      overflow-x: hidden;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    .butterfly-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(0.1px);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 20px 45px rgba(21, 7, 30, 0.35);
+    }
+
+    .glass-card h2,
+    .glass-card p,
+    .glass-card span,
+    .glass-card label,
+    .glass-card legend,
+    .glass-card li,
+    .glass-card strong,
+    .glass-card em,
+    .glass-card code {
+      color: #fdf6ff;
+    }
+
+    .glass-card input[type="text"],
+    .glass-card input[type="radio"],
+    .glass-card input[type="checkbox"] {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #1a0027;
+    }
+
+    .glass-card input::placeholder {
+      color: rgba(26, 0, 39, 0.55);
+    }
+
+    .glass-card button,
+    .glass-card a {
+      box-shadow: 0 10px 25px rgba(90, 29, 120, 0.35);
+    }
+
+    .glass-card a {
+      color: #ffd4ff;
+    }
+
+    .glass-card .text-gray-500 { color: rgba(255, 245, 255, 0.75); }
+    .glass-card .text-gray-600 { color: rgba(255, 245, 255, 0.85); }
+    .glass-card .text-gray-800 { color: #fdf6ff; }
+    .glass-card .text-gray-900 { color: #fdf6ff; }
+
+    footer {
+      color: rgba(255, 245, 255, 0.7);
+    }
+
+    .status-card {
+      padding: 1rem 1.25rem;
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 16px 40px rgba(35, 8, 60, 0.35);
+      color: #fff8ff;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .status-success {
+      border-color: rgba(160, 255, 224, 0.6);
+      box-shadow: 0 18px 40px rgba(70, 255, 209, 0.2);
+      background: linear-gradient(135deg, rgba(22, 170, 140, 0.28), rgba(18, 26, 48, 0.35));
+    }
+
+    .status-info {
+      background: linear-gradient(135deg, rgba(125, 90, 200, 0.32), rgba(22, 14, 40, 0.4));
+    }
+
+    .status-warn {
+      border-color: rgba(255, 200, 140, 0.55);
+      background: linear-gradient(135deg, rgba(255, 180, 120, 0.32), rgba(44, 16, 20, 0.45));
+      box-shadow: 0 18px 42px rgba(255, 158, 120, 0.28);
+    }
   </style>
 </head>
-<body class="bg-gray-50 min-h-dvh text-gray-900 antialiased">
+<body class="min-h-dvh antialiased">
+  <canvas id="butterflyCanvas" class="butterfly-canvas"></canvas>
   <main class="mx-auto max-w-2xl px-4 py-10">
-    <header class="mb-6">
-      <h1 class="text-3xl font-bold tracking-tight">🥮🌕 Challenge designed by Autumn God</h1>
-      <p class="text-gray-600 mt-1">Answer a few magic questions to 🪄 the content.</p>
+    <header class="mb-6 text-white">
+      <h1 class="text-3xl font-bold tracking-tight drop-shadow-lg">🥮🌕 Challenge designed by Autumn God</h1>
+      <p class="mt-1 opacity-80">Answer a few magic questions to 🪄 the content.</p>
     </header>
 
     <!-- Progress / Status -->
     <div id="status" class="mb-6 hidden"></div>
 
     <!-- Quiz Card -->
-    <section id="quizCard" class="bg-white rounded-2xl shadow p-5 space-y-6">
+    <section id="quizCard" class="glass-card rounded-2xl p-5 space-y-6">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Verification</h2>
         <span id="progress" class="text-sm text-gray-500">0 / 0 correct</span>
@@ -42,7 +145,7 @@
     </section>
 
     <!-- Content Card (hidden until passed) -->
-    <section id="contentCard" class="hidden mt-8 bg-white rounded-2xl shadow overflow-hidden">
+    <section id="contentCard" class="hidden mt-8 glass-card rounded-2xl overflow-hidden">
       <div class="flex items-center justify-between p-5 border-b">
         <h2 class="text-xl font-semibold">绝密！档案解锁————请下载md文件获取并查看，其经过精心排列，易读</h2>
         <div class="flex gap-2">
@@ -54,9 +157,168 @@
     </section>
 
     <footer class="mt-10 text-xs text-gray-500">
-      <p>Template by your fellow engineer. For stronger protection, use a server to verify answers and serve a signed URL.</p>
+      <p>你好, oi!</p>
     </footer>
   </main>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById('butterflyCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const butterflies = [];
+      const sparkles = [];
+      let width = 0;
+      let height = 0;
+      const MAX_BUTTERFLIES = 48;
+      const MAX_SPARKLES = 90;
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+      }
+
+      function createButterfly(seedY) {
+        return {
+          x: Math.random() * width,
+          y: seedY ?? (height + Math.random() * height),
+          speed: 0.35 + Math.random() * 0.55,
+          drift: 0.6 + Math.random() * 0.6,
+          life: Math.random() * Math.PI * 2,
+          wingFrequency: 2.2 + Math.random() * 1.6,
+          rotation: (Math.random() - 0.5) * 0.9,
+          scale: 0.35 + Math.random() * 0.55,
+          tint: Math.random()
+        };
+      }
+
+      function createSparkle(seedY) {
+        return {
+          x: Math.random() * width,
+          y: seedY ?? (Math.random() * height),
+          radius: 0.4 + Math.random() * 1.8,
+          speed: 0.08 + Math.random() * 0.18,
+          twinkle: Math.random() * Math.PI * 2,
+          hueShift: Math.random()
+        };
+      }
+
+      function initPopulation() {
+        butterflies.length = 0;
+        sparkles.length = 0;
+        for (let i = 0; i < MAX_BUTTERFLIES; i++) {
+          butterflies.push(createButterfly(Math.random() * height));
+        }
+        for (let i = 0; i < MAX_SPARKLES; i++) {
+          sparkles.push(createSparkle(Math.random() * height));
+        }
+      }
+
+      function drawButterfly(b) {
+        const flutter = Math.sin(b.life * b.wingFrequency);
+        const flutterScale = b.scale * (1 + flutter * 0.25);
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rotation + flutter * 0.12);
+        const baseRadius = 28 * flutterScale;
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, baseRadius);
+        if (b.tint < 0.5) {
+          gradient.addColorStop(0, 'rgba(255, 245, 225, 0.95)');
+          gradient.addColorStop(0.45, 'rgba(255, 210, 140, 0.85)');
+          gradient.addColorStop(1, 'rgba(255, 160, 110, 0.15)');
+        } else {
+          gradient.addColorStop(0, 'rgba(255, 245, 240, 0.95)');
+          gradient.addColorStop(0.45, 'rgba(255, 160, 210, 0.8)');
+          gradient.addColorStop(1, 'rgba(180, 90, 200, 0.18)');
+        }
+
+        ctx.globalAlpha = 0.92;
+        for (const dir of [-1, 1]) {
+          ctx.save();
+          ctx.scale(dir, 1);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-22 * flutterScale, -18 * flutterScale, -46 * flutterScale, -4 * flutterScale, -18 * flutterScale, 20 * flutterScale);
+          ctx.bezierCurveTo(-8 * flutterScale, 26 * flutterScale, -2 * flutterScale, 12 * flutterScale, 0, 0);
+          ctx.closePath();
+          ctx.fillStyle = gradient;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = 'rgba(45, 8, 70, 0.9)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 2.3 * flutterScale, 16 * flutterScale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.beginPath();
+        ctx.ellipse(0, -6 * flutterScale, 1.5 * flutterScale, 3.6 * flutterScale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+
+      function drawSparkle(s) {
+        const twinkle = 0.25 + 0.35 * (1 + Math.sin(s.twinkle)) * 0.5;
+        const alpha = 0.15 + twinkle * 0.55;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255, ${190 + s.hueShift * 40 | 0}, ${200 + s.hueShift * 55 | 0}, ${alpha})`;
+        ctx.arc(s.x, s.y, s.radius * (1 + twinkle * 0.8), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      let lastTime = 0;
+      function animate(time) {
+        const dt = Math.min((time - lastTime) / 1000 || 0, 0.032);
+        lastTime = time;
+        ctx.clearRect(0, 0, width, height);
+
+        for (const s of sparkles) {
+          s.y -= s.speed;
+          s.twinkle += dt * 4;
+          if (s.y < -10) {
+            s.x = Math.random() * width;
+            s.y = height + Math.random() * 30;
+          }
+          drawSparkle(s);
+        }
+
+        for (const b of butterflies) {
+          b.life += dt;
+          b.y -= b.speed;
+          b.x += Math.sin(b.life * b.drift) * 0.6;
+          if (b.y < -60 || b.x < -80 || b.x > width + 80) {
+            Object.assign(b, createButterfly(height + Math.random() * 120));
+          }
+          drawButterfly(b);
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      resize();
+      initPopulation();
+      requestAnimationFrame((time) => {
+        lastTime = time;
+        animate(time);
+      });
+      window.addEventListener('resize', () => {
+        resize();
+        initPopulation();
+      });
+    })();
+  </script>
 
   <script>
     // ======== CONFIGURE HERE ========
@@ -519,7 +781,8 @@
 
     function showStatus(msg, kind = 'info') {
       el.status.classList.remove('hidden');
-      el.status.className = 'mb-6 p-3 rounded-xl ' + (kind === 'success' ? 'bg-emerald-50 text-emerald-800' : kind === 'warn' ? 'bg-amber-50 text-amber-800' : 'bg-gray-100 text-gray-800');
+      const kindClass = kind === 'success' ? 'status-success' : kind === 'warn' ? 'status-warn' : 'status-info';
+      el.status.className = `mb-6 status-card ${kindClass}`;
       el.status.textContent = msg;
     }
 
