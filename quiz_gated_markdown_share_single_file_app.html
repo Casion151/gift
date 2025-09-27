@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Unlock-by-Quiz Link</title>
+  <!-- Tailwind via Play CDN (dev-friendly) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Marked (Markdown -> HTML) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- DOMPurify (sanitize HTML) -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+  <style>
+    /* Optional: focus rings for accessibility */
+    :focus { outline: 2px solid; outline-offset: 2px; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-dvh text-gray-900 antialiased">
+  <main class="mx-auto max-w-2xl px-4 py-10">
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold tracking-tight">🥮🌕 Challenge designed by Autumn God</h1>
+      <p class="text-gray-600 mt-1">Answer a few magic questions to 🪄 the content.</p>
+    </header>
+
+    <!-- Progress / Status -->
+    <div id="status" class="mb-6 hidden"></div>
+
+    <!-- Quiz Card -->
+    <section id="quizCard" class="bg-white rounded-2xl shadow p-5 space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold">Verification</h2>
+        <span id="progress" class="text-sm text-gray-500">0 / 0 correct</span>
+      </div>
+
+      <form id="quizForm" class="space-y-6"></form>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button id="checkBtn" class="px-4 py-2 rounded-2xl bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed" type="button">Check answers</button>
+        <button id="resetBtn" class="px-3 py-2 rounded-2xl bg-gray-200 text-gray-800 hover:bg-gray-300" type="button">Reset</button>
+      </div>
+      <p class="text-xs text-gray-500">Note: Your pass is cached on this device for convenience. Use “Reset” to clear it.</p>
+    </section>
+
+    <!-- Content Card (hidden until passed) -->
+    <section id="contentCard" class="hidden mt-8 bg-white rounded-2xl shadow overflow-hidden">
+      <div class="flex items-center justify-between p-5 border-b">
+        <h2 class="text-xl font-semibold">绝密！档案解锁————请下载md文件获取并查看，其经过精心排列，易读</h2>
+        <div class="flex gap-2">
+          <button id="downloadMdBtn" class="px-3 py-1.5 rounded-xl bg-gray-900 text-white hover:bg-gray-800">Download .md</button>
+          <a id="downloadUrlBtn" class="px-3 py-1.5 rounded-xl bg-gray-200 text-gray-800 hover:bg-gray-300 hidden" href="#" download>Download file</a>
+        </div>
+      </div>
+      <article id="renderTarget" class="prose prose-gray px-5 py-6 max-w-none"></article>
+    </section>
+
+    <footer class="mt-10 text-xs text-gray-500">
+      <p>Template by your fellow engineer. For stronger protection, use a server to verify answers and serve a signed URL.</p>
+    </footer>
+  </main>
+
+  <script>
+    // ======== CONFIGURE HERE ========
+    // 1) Put your Markdown content here. You can replace this string or fetch it dynamically.
+    const MARKDOWN = `🧚‍♀️dxq🦋特典🎀\n# 国内篇\n## 1. 线下\n### 1.1 近距离线下——周末和平时可以去实验室\n1. 在自己所处的学校寻找老师（最寻常也最容易进入课题组）\n    1. 学校内\n    2. 和学校有合作关系的科研院所与机构的课题组\n2. 在所处学校所在的IP地的其他学校寻找课题组（因为离得近，而且可以周末全力线下投入科研实习）\n    1. 自己邮件联系，最好有一定的相关背景，比如自学过网上一些知名大学的公开课，有课程项目，或者之前加入过相关课题组以及参加过相关课题方向比较匹配的知名竞赛\n    2. 通过本校老师帮忙，认真上本校老师的专业课，积极与对方交流（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者先进本校老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 参加学术会议，在间隙积极与老师交流（不过一般老师比较忙，难找到机会），会后及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。\n### 1.2 远距离线下——暑假科研实习\n1. 申请各科研院所的官方暑研项目(北大，清华，中科大，西湖大学，中科院，北生所等等都有相关的项目)\n    1. 如果申请不上，也可以申请对应的暑期课程项目，在课程期间去相关课题组见识一下。\n2. 自行联系（注意询问是自己负责生活费还是对方补贴，同时询问是否会提供正式的访问学生ID卡）\n    1. 自己邮件联系，最好有一定的相关背景，比如自学过网上一些知名大学的公开课，有课程项目，或者之前加入过相关课题组以及参加过相关课题方向比较匹配的知名竞赛\n    2. 通过本校老师帮忙，认真上本校老师的专业课，积极与对方交流（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者先进本校老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 参加学术会议，在间隙积极与老师交流（不过一般老师比较忙，难找到机会），会后及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。\n## 2. 线上(将与国际篇放在一起讨论)\n\n\n# 国际篇\n## 1. 线下（一般不存在远距离线下，因为不符合签证规定，一般只能在提供签证支持的学校进行线下实习）\n### 1.1 日常版线下——周末和平时可以去实验室\n1. 报名该学校的访问交流项目\n    1. 一般如果是春学期（1月开始）的话，需要提前到秋学期刚开始（9-10月）就做交流项目的报名准备。也就是提前一个学期。\n    2. 具体材料要求根据学校有变化。\n    3. 可以查看对比一下自己报名与通过本科院校帮助报名的不同要求，有时候自己报名所需的要求会比通过本科院校报名还低。而且一般材料交齐报名了就都会被录取（毕竟国外学校通过学费创收）。\n    4. 有些项目来不及考英语成绩的话，可以提交托福或者多邻国代替。\n    5. BBSA项目收费是最低的，和本地人一个标准，其余基本都要3万美元一学期，相应的坏处是在公立学校进实验室有点麻烦。不过个人体验其实也不是特别麻烦，主要在于需要积极找感兴趣的教授交流。同时，我有同学去来哈佛交换，她也找不到老师愿意接受她，最后是靠国内老师（原来是哈佛的博士后）帮忙推荐实验室才进去的。\n6. 之前提到准备交流项目的申请材料，同时也可以开始给想去的学校的老师写邮件询问能否加入对方课题组了。这样你可以提前和对面实验室对接，一过去就可以进行研究，老师也会更愿意接受做课题时间长的学生。\n    1. 自己邮件联系，最好有一定的相关背景，做过相关的课题项目，或者掌握相关的课题组所需的技能。\n    2. 通过某个已经认识你的老师帮忙，认真上本校老师的专业课，或者积极与对方交流过（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者之前进过某个老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 在申请前参加过学术会议，在学术会议上与老师交流过（不过一般老师比较忙，难找到机会），会后有过及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。这时，你再发个邮件给老师说我从xxx会议上和你聊过，现在又来找你了，老师会挺愿意接受你的。\n    4. 选择想去的国外老师上的课，下课以后主动询问老师进组情况\n7. 注意：进课题组之前可能有以下几种情况：\n    1. 有考查与面试，比如完成项目做汇报再决定是否长期合作\n    2. 老师直接将你的信息推送给博士后，你自己和博士后商量项目\n    3. 你直接和老师对接项目（极少，需要珍惜）\n### 1.2 近距离线下——一直待在实验室（类似博士生的生活，不过可能更苦😆因为博士生至少还可以去学校上课摸鱼）\n1. 报名该学校的官方暑研项目（时间2个月）或者与该学校的老师自行联系暑研（时间为2个月～12个月都有可能协商）无论是哪种，都需要提前3-6个月和老师联系。因为需要办签证，很麻烦！\n    1. 自己邮件联系，最好有一定的相关背景，做过相关的课题项目，或者掌握相关的课题组所需的技能。\n    2. 通过某个已经认识你的老师帮忙，认真上本校老师的专业课，或者积极与对方交流过（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者之前进过某个老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 在申请前参加过学术会议，在线下或者线上学术会议上与老师交流过（不过一般老师比较忙，难找到机会），会后有过及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。这时，你再发个邮件给老师说我从xxx会议上和你聊过，现在又来找你了，老师会挺愿意接受你的。\n2. 香港的学校的暑研项目直接与博士录取挂钩。\n\n## 2. 线上（麻烦的在于目前对于数据管控比较严格）\n### 2.1 日常版线上\n1. 先报名任意学校的交流项目，再联系其他学校的老师询问是否能进行线上科研项目。方法同上。\n### 2.2 肉身在国内的线上\n1. 可以通过查阅各学校网站有无开放的线上项目，比如我以前就查到Stanford是有一个表格专门做这个事情的。https://docs.google.com/spreadsheets/d/1yDtCqr36_tMc85M6Usfg877KMoM6lde-E-i6PeW1Ziw/edit?gid=923159611#gid=923159611\n2. 自行联系 方法同上。有些老师的实验室官网上也会有写招募远程科研。举个🌰：https://bioinformatics.bwh.harvard.edu/join/\n`;
+
+    // 2) Optional: expose a real download URL after pass (e.g., from Drive/S3).
+    // Leave empty string to hide the button.
+    const DOWNLOAD_URL_AFTER_PASS = ""; // e.g., "https://example.com/yourfile.pdf"
+
+    // 3) Define your questions. Answers are *hashed* with SHA-256 to avoid plain-text answers in source.
+    //    Use window.hashPlain('your answer') in DevTools to generate hashes with the same normalization as checks.
+    //    Types: 'text' | 'single' (radio) | 'multiple' (checkbox)
+    const QUESTIONS = [
+      {
+        id: 'q1',
+        type: 'text',
+        prompt: 'Who is Magic_QiQi?',
+        placeholder: '请准确无误地输入你的名字',
+        answerHash: '8089263d065ce1db56e3d53f90e56fd556bc8cdb81a7f6606045b9995204393b', // hash of "戴筱琪"
+        hint: '你的名字'
+      },
+      {
+        id: 'q2',
+        type: 'single',
+        prompt: '为什么选择在今天发给你',
+        choices: [
+          { id: 'a', label: '正好是认识的满四个月' },
+          { id: 'b', label: '正巧今天弄好灵机一动' },
+          { id: 'c', label: '正逢佳节与彩排的前夕' },
+          { id: 'd', label: '其他，请填写你的理由', allowCustom: true, customPlaceholder: '写下你的理由吧' }
+        ],
+        acceptAnySelection: true
+      },
+      {
+        id: 'q3',
+        type: 'multiple',
+        prompt: '你今天快乐🎊了吗',
+        choices: [
+          { id: 'a', label: '不快乐，彩排好累' },
+          { id: 'b', label: '不快乐，流了好多汗' },
+          { id: 'c', label: '不快乐，天气不好' },
+          { id: 'd', label: '不快乐，领个文件整这么花哨' },
+          { id: 'e', label: '其他，请填写你的感受', allowCustom: true, customPlaceholder: '写下你的感受吧' },
+        ],
+        acceptAnySelection: true
+      }
+    ];
+
+    // 4) Optional: gate by token in URL (e.g., you share /?token=abc123 to one person). If provided,
+    //    we store it and require the same token to see the cached pass. Set to false to disable token gating.
+    const REQUIRE_URL_TOKEN_TO_REUSE_PASS = true;
+
+    // 5) Optional: push completed responses to a GitHub repo. Fill in these values (token requires repo write access).
+    const GITHUB_UPLOAD_CONFIG = {
+      owner: '', // e.g., 'your-username'
+      repo: '', // e.g., 'your-repo'
+      path: 'quiz-responses.json', // file that will store an array of submissions
+      branch: 'main',
+      commitMessage: 'Add quiz response',
+      token: '' // personal access token; set at runtime for security if possible
+    };
+    // ======== END CONFIG ========
+
+    const el = {
+      quizCard: document.getElementById('quizCard'),
+      contentCard: document.getElementById('contentCard'),
+      quizForm: document.getElementById('quizForm'),
+      checkBtn: document.getElementById('checkBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      progress: document.getElementById('progress'),
+      renderTarget: document.getElementById('renderTarget'),
+      status: document.getElementById('status'),
+      downloadMdBtn: document.getElementById('downloadMdBtn'),
+      downloadUrlBtn: document.getElementById('downloadUrlBtn'),
+    };
+
+    // Utilities
+    const norm = (str) => str.trim().toLowerCase().replace(/\s+/g, ' ');
+    const toHex = (buffer) => Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    async function sha256Hex(input) {
+      const data = new TextEncoder().encode(norm(input));
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return toHex(hash);
+    }
+
+    // Dev helper: quickly generate an answer hash in console.
+    window.hashPlain = async (s) => {
+      const h = await sha256Hex(String(s));
+      console.log(`SHA-256(${JSON.stringify(norm(String(s)))}) =`, h);
+      return h;
+    };
+
+    // Token handling (optional)
+    const url = new URL(location.href);
+    const urlToken = url.searchParams.get('token') || '';
+
+    // Local cache key
+    const CACHE_KEY = 'quiz-gate-pass-v1';
+
+    function readCache() {
+      try {
+        return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+      } catch { return {}; }
+    }
+    function writeCache(obj) {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(obj));
+    }
+    function clearCache() {
+      localStorage.removeItem(CACHE_KEY);
+    }
+
+    // Attempt counters per question
+    const attempts = new Map();
+
+    // Render quiz
+    function renderQuiz() {
+      el.quizForm.innerHTML = '';
+      let correctCount = 0;
+      attempts.clear();
+
+      QUESTIONS.forEach((q, idx) => {
+        const field = document.createElement('fieldset');
+        field.className = 'space-y-2';
+        field.dataset.qid = q.id;
+
+        const label = document.createElement('legend');
+        label.className = 'font-medium flex items-center gap-2';
+        label.innerHTML = `<span class="text-gray-800">${idx + 1}. ${q.prompt}</span>`;
+        field.appendChild(label);
+
+        const help = document.createElement('div');
+        help.className = 'text-sm text-gray-500 hidden';
+        help.id = `hint-${q.id}`;
+        if (q.hint) help.textContent = q.hint;
+        field.appendChild(help);
+
+        const inputWrap = document.createElement('div');
+        inputWrap.className = 'mt-1';
+
+        if (q.type === 'text') {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = q.placeholder || '';
+          input.className = 'w-full rounded-xl border px-3 py-2';
+          input.name = q.id;
+          inputWrap.appendChild(input);
+        }
+        else if (q.type === 'single') {
+          q.choices.forEach(choice => {
+            const id = `${q.id}-${choice.id}`;
+            const row = document.createElement('div');
+            row.className = 'space-y-2';
+
+            const optionLabel = document.createElement('label');
+            optionLabel.className = 'flex items-center gap-3 rounded-xl border px-3 py-2 hover:bg-gray-50';
+            optionLabel.setAttribute('for', id);
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = q.id;
+            radio.id = id;
+            radio.value = choice.id;
+            radio.className = 'size-4';
+
+            const text = document.createElement('span');
+            text.textContent = choice.label;
+
+            optionLabel.appendChild(radio);
+            optionLabel.appendChild(text);
+            row.appendChild(optionLabel);
+
+            if (choice.allowCustom) {
+              const customInput = document.createElement('input');
+              customInput.type = 'text';
+              customInput.placeholder = choice.customPlaceholder || '请输入你的答案';
+              customInput.className = 'ml-7 mt-1 w-full rounded-xl border px-3 py-2 hidden';
+              customInput.dataset.customFor = id;
+              customInput.disabled = true;
+              row.appendChild(customInput);
+            }
+
+            inputWrap.appendChild(row);
+          });
+        }
+        else if (q.type === 'multiple') {
+          q.choices.forEach(choice => {
+            const id = `${q.id}-${choice.id}`;
+            const row = document.createElement('div');
+            row.className = 'space-y-2';
+
+            const optionLabel = document.createElement('label');
+            optionLabel.className = 'flex items-center gap-3 rounded-xl border px-3 py-2 hover:bg-gray-50';
+            optionLabel.setAttribute('for', id);
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.name = q.id;
+            cb.id = id;
+            cb.value = choice.id;
+            cb.className = 'size-4';
+
+            const text = document.createElement('span');
+            text.textContent = choice.label;
+
+            optionLabel.appendChild(cb);
+            optionLabel.appendChild(text);
+            row.appendChild(optionLabel);
+
+            if (choice.allowCustom) {
+              const customInput = document.createElement('input');
+              customInput.type = 'text';
+              customInput.placeholder = choice.customPlaceholder || '请输入你的答案';
+              customInput.className = 'ml-7 mt-1 w-full rounded-xl border px-3 py-2 hidden';
+              customInput.dataset.customFor = id;
+              customInput.disabled = true;
+              row.appendChild(customInput);
+            }
+
+            inputWrap.appendChild(row);
+          });
+        }
+
+        const feedback = document.createElement('div');
+        feedback.id = `fb-${q.id}`;
+        feedback.className = 'text-sm mt-2 h-5';
+
+        field.appendChild(inputWrap);
+        field.appendChild(feedback);
+        el.quizForm.appendChild(field);
+
+        attempts.set(q.id, 0);
+      });
+
+      // progress init
+      el.progress.textContent = `0 / ${QUESTIONS.length} correct`;
+    }
+
+    function handleChoiceChange(event) {
+      const target = event.target;
+      if (!target || target.tagName !== 'INPUT') return;
+      const fieldset = target.closest('fieldset');
+      if (!fieldset) return;
+
+      if (target.type === 'radio') {
+        const customInputs = fieldset.querySelectorAll('input[data-custom-for]');
+        customInputs.forEach(input => {
+          const match = input.dataset.customFor === target.id;
+          input.classList.toggle('hidden', !match);
+          input.disabled = !match;
+          if (!match) input.value = '';
+          if (match) input.focus();
+        });
+      } else if (target.type === 'checkbox') {
+        const customInput = fieldset.querySelector(`input[data-custom-for="${target.id}"]`);
+        if (customInput) {
+          const show = target.checked;
+          customInput.classList.toggle('hidden', !show);
+          customInput.disabled = !show;
+          if (!show) customInput.value = '';
+          else customInput.focus();
+        }
+      }
+    }
+
+    // Collect and check answers
+    async function checkAnswers() {
+      let correctCount = 0;
+      const attemptAnswers = {};
+
+      for (const q of QUESTIONS) {
+        const feedback = document.getElementById(`fb-${q.id}`);
+        const hintEl = document.getElementById(`hint-${q.id}`);
+        let ok = false;
+        let failReason = null;
+
+        if (q.type === 'text') {
+          const input = el.quizForm.querySelector(`input[name="${q.id}"]`);
+          const val = input.value;
+          attemptAnswers[q.id] = { type: 'text', value: val };
+          if (!val.trim()) failReason = 'empty';
+          const h = await sha256Hex(val);
+          ok = (h === q.answerHash);
+        }
+        else if (q.type === 'single') {
+          const sel = el.quizForm.querySelector(`input[name="${q.id}"]:checked`);
+          const selected = sel ? sel.value : '';
+          const selectedChoice = selected ? q.choices.find(choice => choice.id === selected) || null : null;
+          const customInput = sel ? el.quizForm.querySelector(`input[data-custom-for="${sel.id}"]`) : null;
+          const customValue = customInput ? customInput.value.trim() : '';
+
+          attemptAnswers[q.id] = {
+            type: 'single',
+            selectedOption: selected || null,
+            selectedLabel: selectedChoice ? selectedChoice.label : null,
+            customText: customValue || null
+          };
+
+          if (q.acceptAnySelection) {
+            if (selectedChoice && selectedChoice.allowCustom) {
+              ok = customValue.length > 0;
+              if (!ok) failReason = 'custom-empty';
+            } else if (selected) {
+              ok = true;
+            } else {
+              failReason = 'no-selection';
+            }
+          } else if (selected && q.correctOptionsHash) {
+            const h = await sha256Hex(selected);
+            ok = (h === q.correctOptionsHash);
+            if (!ok) failReason = 'mismatch';
+          } else if (!selected) {
+            failReason = 'no-selection';
+          }
+        }
+        else if (q.type === 'multiple') {
+          const selectedOptions = Array.from(el.quizForm.querySelectorAll(`input[name="${q.id}"]:checked`)).map(el => el.value).sort();
+          const selected = selectedOptions.join('|');
+          const customTexts = {};
+          let customMissing = false;
+          attemptAnswers[q.id] = {
+            type: 'multiple',
+            selectedOptions,
+            selectedLabels: selectedOptions.map(val => {
+              const match = q.choices.find(choice => choice.id === val);
+              return match ? match.label : val;
+            }),
+            customTexts: null
+          };
+          selectedOptions.forEach(val => {
+            const choice = q.choices.find(choice => choice.id === val);
+            if (choice && choice.allowCustom) {
+              const input = el.quizForm.querySelector(`input[data-custom-for="${q.id}-${choice.id}"]`);
+              const text = input ? input.value.trim() : '';
+              customTexts[val] = text;
+              if (!text) {
+                customMissing = true;
+                failReason = 'custom-empty';
+              }
+            }
+          });
+          if (Object.keys(customTexts).length) {
+            attemptAnswers[q.id].customTexts = customTexts;
+          }
+          if (!selectedOptions.length) failReason = failReason || 'no-selection';
+
+          if (q.acceptAnySelection) {
+            if (selectedOptions.length && !customMissing) {
+              ok = true;
+            } else {
+              ok = false;
+              if (!selectedOptions.length && !failReason) failReason = 'no-selection';
+              if (customMissing) failReason = 'custom-empty';
+            }
+          } else if (q.correctOptionsHash) {
+            const h = await sha256Hex(selected);
+            ok = (h === q.correctOptionsHash);
+            if (!ok && !failReason) failReason = 'mismatch';
+            if (ok && customMissing) {
+              ok = false;
+              failReason = 'custom-empty';
+            }
+          }
+        }
+
+        if (ok) {
+          correctCount++;
+          feedback.textContent = '✔️ Correct';
+          feedback.className = 'text-sm mt-2 text-emerald-700';
+        } else {
+          const count = attempts.get(q.id) + 1;
+          attempts.set(q.id, count);
+          let failMessage = '❌ Try again';
+          if (failReason === 'no-selection') failMessage = '❌ 请选择一个选项';
+          else if (failReason === 'custom-empty') failMessage = '❌ 请填写你的理由';
+          else if (failReason === 'empty') failMessage = '❌ 请填写答案';
+          feedback.textContent = failMessage;
+          feedback.className = 'text-sm mt-2 text-rose-700';
+          if (count >= 2 && hintEl && hintEl.textContent) hintEl.classList.remove('hidden');
+        }
+      }
+
+      el.progress.textContent = `${correctCount} / ${QUESTIONS.length} correct`;
+
+      if (correctCount === QUESTIONS.length) await onPassed(attemptAnswers);
+    }
+
+    // After pass
+    async function onPassed(answers) {
+      // Cache pass with timestamp and token (if required)
+      const payload = { passedAt: Date.now(), token: urlToken || null };
+      writeCache(payload);
+
+      let statusMessage = 'Access granted';
+      let statusKind = 'success';
+
+      if (answers) {
+        const submission = {
+          timestamp: new Date().toISOString(),
+          token: urlToken || null,
+          answers
+        };
+
+        try {
+          const result = await uploadResponseToGithub(submission);
+          if (result === 'saved') {
+            statusMessage = 'Access granted. Response saved to GitHub.';
+          } else if (result === 'skipped') {
+            statusMessage = 'Access granted. Response not saved (GitHub upload disabled).';
+            statusKind = 'warn';
+          }
+        } catch (error) {
+          console.error('GitHub upload failed:', error);
+          statusMessage = 'Access granted. Response could not be saved to GitHub.';
+          statusKind = 'warn';
+        }
+      }
+
+      showStatus(statusMessage, statusKind);
+      revealContent();
+    }
+
+    function showStatus(msg, kind = 'info') {
+      el.status.classList.remove('hidden');
+      el.status.className = 'mb-6 p-3 rounded-xl ' + (kind === 'success' ? 'bg-emerald-50 text-emerald-800' : kind === 'warn' ? 'bg-amber-50 text-amber-800' : 'bg-gray-100 text-gray-800');
+      el.status.textContent = msg;
+    }
+
+    function revealContent() {
+      // Render Markdown -> HTML and sanitize
+      const rawHtml = marked.parse(MARKDOWN);
+      const safeHtml = DOMPurify.sanitize(rawHtml);
+      el.renderTarget.innerHTML = safeHtml;
+
+      // Toggle cards
+      el.quizCard.classList.add('hidden');
+      el.contentCard.classList.remove('hidden');
+
+      // Download buttons
+      el.downloadMdBtn.onclick = (e) => {
+        e.preventDefault();
+        const blob = new Blob([MARKDOWN], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'content.md';
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      };
+
+      if (DOWNLOAD_URL_AFTER_PASS) {
+        el.downloadUrlBtn.classList.remove('hidden');
+        el.downloadUrlBtn.href = DOWNLOAD_URL_AFTER_PASS;
+      }
+    }
+
+    async function uploadResponseToGithub(submission) {
+      const { owner, repo, path, branch, commitMessage, token } = GITHUB_UPLOAD_CONFIG;
+      if (!owner || !repo || !path || !token) {
+        console.warn('GitHub upload skipped: missing owner, repo, path, or token.');
+        return 'skipped';
+      }
+
+      const targetBranch = branch || 'main';
+      const headers = {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${token}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      };
+      const safeOwner = encodeURIComponent(owner);
+      const safeRepo = encodeURIComponent(repo);
+      const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+      const apiUrl = `https://api.github.com/repos/${safeOwner}/${safeRepo}/contents/${encodedPath}`;
+
+      let existingSha;
+      let entries = [];
+      try {
+        const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(targetBranch)}`, { headers });
+        if (res.status === 200) {
+          const data = await res.json();
+          existingSha = data.sha;
+          const raw = data.content.replace(/\n/g, '');
+          const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+          const decoded = new TextDecoder().decode(bytes);
+          const parsed = JSON.parse(decoded || '[]');
+          if (Array.isArray(parsed)) entries = parsed;
+          else if (parsed && typeof parsed === 'object') entries = [parsed];
+        } else if (res.status !== 404) {
+          throw new Error(`GitHub read failed with status ${res.status}`);
+        }
+      } catch (error) {
+        throw error;
+      }
+
+      entries.push(submission);
+
+      const jsonText = JSON.stringify(entries, null, 2);
+      const encodedBytes = new TextEncoder().encode(jsonText);
+      const base64Content = btoa(Array.from(encodedBytes, byte => String.fromCharCode(byte)).join(''));
+
+      const body = {
+        message: commitMessage || 'Add quiz response',
+        content: base64Content,
+        branch: targetBranch
+      };
+      if (existingSha) body.sha = existingSha;
+
+      const saveRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (!saveRes.ok) {
+        throw new Error(`GitHub write failed with status ${saveRes.status}`);
+      }
+
+      return 'saved';
+    }
+
+    function resetAll() {
+      clearCache();
+      el.quizCard.classList.remove('hidden');
+      el.contentCard.classList.add('hidden');
+      renderQuiz();
+      showStatus('Reset complete. Answers cleared on this device.', 'info');
+    }
+
+    // Try resume from cache
+    function tryResume() {
+      const cache = readCache();
+      const hasPass = !!cache.passedAt;
+      if (!hasPass) return false;
+      if (REQUIRE_URL_TOKEN_TO_REUSE_PASS && cache.token !== (urlToken || null)) {
+        showStatus('This link has a different token than the one used when you passed. Please answer again.', 'warn');
+        return false;
+      }
+      showStatus('Pass recognized on this device.', 'success');
+      revealContent();
+      return true;
+    }
+
+    // Wire up
+    el.quizForm.addEventListener('change', handleChoiceChange);
+    el.checkBtn.addEventListener('click', checkAnswers);
+    el.resetBtn.addEventListener('click', resetAll);
+
+    // Init
+    (function init() {
+      renderQuiz();
+      tryResume();
+    })();
+  </script>
+</body>
+</html>
