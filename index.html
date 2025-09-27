@@ -81,7 +81,7 @@
       },
       {
         id: 'q2',
-        type: 'single',
+        type: 'multiple',
         prompt: '为什么选择在今天发给你',
         choices: [
           { id: 'a', label: '正好是认识的满四个月' },
@@ -89,7 +89,11 @@
           { id: 'c', label: '正逢佳节与彩排的前夕' },
           { id: 'd', label: '其他，请填写你的理由', allowCustom: true, customPlaceholder: '写下你的理由吧' }
         ],
-        acceptAnySelection: true
+        correctOptionsHashes: [
+          '3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d', // 'b'
+          '18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4', // 'd'
+          '3f7dc29ee8aedb343414c6fe5d5cf9dd5fdee5b6e25ffd3afc54ff9e026712fb'  // 'b|d'
+        ]
       },
       {
         id: 'q3',
@@ -112,14 +116,37 @@
 
     // 5) Optional: push completed responses to a GitHub repo. Fill in these values (token requires repo write access).
     const GITHUB_UPLOAD_CONFIG = {
-      owner: '', // e.g., 'your-username'
-      repo: '', // e.g., 'your-repo'
-      path: 'quiz-responses.json', // file that will store an array of submissions
+      owner: 'Casion151',
+      repo: 'gift',
+      mode: 'issue', // 'issue' to open GitHub issues, 'file' to append to a JSON file
+      path: 'quiz-responses.json', // used only when mode === 'file'
       branch: 'main',
       commitMessage: 'Add quiz response',
-      token: '' // personal access token; set at runtime for security if possible
+      issueTitle: 'Quiz response from gate',
+      issueLabels: ['quiz-response'],
+      token: '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' // personal access token; hard-coded for automatic uploads
     };
     // ======== END CONFIG ========
+
+    // Allow setting GitHub token at runtime for safer local testing
+    try {
+      const storedToken = localStorage.getItem('quiz-gh-token');
+      if (storedToken && !GITHUB_UPLOAD_CONFIG.token) {
+        GITHUB_UPLOAD_CONFIG.token = storedToken;
+      }
+    } catch (error) {
+      console.warn('Unable to read stored GitHub token:', error);
+    }
+    window.setQuizGithubToken = (token) => {
+      GITHUB_UPLOAD_CONFIG.token = token || '';
+      try {
+        if (token) localStorage.setItem('quiz-gh-token', token);
+        else localStorage.removeItem('quiz-gh-token');
+      } catch (error) {
+        console.warn('Unable to persist GitHub token:', error);
+      }
+      return !!token;
+    };
 
     const el = {
       quizCard: document.getElementById('quizCard'),
@@ -411,6 +438,17 @@
               if (!selectedOptions.length && !failReason) failReason = 'no-selection';
               if (customMissing) failReason = 'custom-empty';
             }
+          } else if (Array.isArray(q.correctOptionsHashes) && q.correctOptionsHashes.length) {
+            if (!selectedOptions.length) {
+              ok = false;
+            } else if (customMissing) {
+              ok = false;
+              failReason = 'custom-empty';
+            } else {
+              const h = await sha256Hex(selected);
+              ok = q.correctOptionsHashes.includes(h);
+              if (!ok) failReason = failReason || 'mismatch';
+            }
           } else if (q.correctOptionsHash) {
             const h = await sha256Hex(selected);
             ok = (h === q.correctOptionsHash);
@@ -513,13 +551,23 @@
     }
 
     async function uploadResponseToGithub(submission) {
-      const { owner, repo, path, branch, commitMessage, token } = GITHUB_UPLOAD_CONFIG;
-      if (!owner || !repo || !path || !token) {
-        console.warn('GitHub upload skipped: missing owner, repo, path, or token.');
+      const {
+        owner,
+        repo,
+        token,
+        mode = 'file',
+        path,
+        branch,
+        commitMessage,
+        issueTitle,
+        issueLabels
+      } = GITHUB_UPLOAD_CONFIG;
+
+      if (!owner || !repo || !token) {
+        console.warn('GitHub upload skipped: missing owner, repo, or token.');
         return 'skipped';
       }
 
-      const targetBranch = branch || 'main';
       const headers = {
         'Accept': 'application/vnd.github+json',
         'Authorization': `Bearer ${token}`,
@@ -527,27 +575,62 @@
       };
       const safeOwner = encodeURIComponent(owner);
       const safeRepo = encodeURIComponent(repo);
+
+      if (mode === 'issue') {
+        const titleBase = issueTitle || 'Quiz response';
+        const timestamp = submission.timestamp || new Date().toISOString();
+        const labelsPayload = Array.isArray(issueLabels) && issueLabels.length ? issueLabels : undefined;
+        const bodyLines = [
+          `**Timestamp:** ${timestamp}`,
+          `**Token:** ${submission.token || '(none)'}`,
+          '',
+          '```json',
+          JSON.stringify(submission.answers, null, 2),
+          '```'
+        ];
+        const issueBody = bodyLines.join('\n');
+        const issuePayload = {
+          title: `${titleBase} (${timestamp})`,
+          body: issueBody
+        };
+        if (labelsPayload) issuePayload.labels = labelsPayload;
+
+        const issueRes = await fetch(`https://api.github.com/repos/${safeOwner}/${safeRepo}/issues`, {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify(issuePayload)
+        });
+
+        if (!issueRes.ok) {
+          throw new Error(`GitHub issue creation failed with status ${issueRes.status}`);
+        }
+
+        return 'saved';
+      }
+
+      if (!path) {
+        console.warn('GitHub upload skipped: no target path provided for file mode.');
+        return 'skipped';
+      }
+
+      const targetBranch = branch || 'main';
       const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
       const apiUrl = `https://api.github.com/repos/${safeOwner}/${safeRepo}/contents/${encodedPath}`;
 
       let existingSha;
       let entries = [];
-      try {
-        const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(targetBranch)}`, { headers });
-        if (res.status === 200) {
-          const data = await res.json();
-          existingSha = data.sha;
-          const raw = data.content.replace(/\n/g, '');
-          const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-          const decoded = new TextDecoder().decode(bytes);
-          const parsed = JSON.parse(decoded || '[]');
-          if (Array.isArray(parsed)) entries = parsed;
-          else if (parsed && typeof parsed === 'object') entries = [parsed];
-        } else if (res.status !== 404) {
-          throw new Error(`GitHub read failed with status ${res.status}`);
-        }
-      } catch (error) {
-        throw error;
+      const readRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(targetBranch)}`, { headers });
+      if (readRes.status === 200) {
+        const data = await readRes.json();
+        existingSha = data.sha;
+        const raw = data.content.replace(/\n/g, '');
+        const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+        const decoded = new TextDecoder().decode(bytes);
+        const parsed = JSON.parse(decoded || '[]');
+        if (Array.isArray(parsed)) entries = parsed;
+        else if (parsed && typeof parsed === 'object') entries = [parsed];
+      } else if (readRes.status !== 404) {
+        throw new Error(`GitHub read failed with status ${readRes.status}`);
       }
 
       entries.push(submission);
