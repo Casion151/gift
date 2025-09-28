@@ -13,7 +13,6 @@
   <style>
     /* Optional: focus rings for accessibility */
     :focus { outline: 2px solid; outline-offset: 2px; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -23,12 +22,10 @@
       color: #fdf6ff;
       overflow-x: hidden;
     }
-
     main {
       position: relative;
       z-index: 1;
     }
-
     .butterfly-canvas {
       position: fixed;
       inset: 0;
@@ -38,14 +35,12 @@
       z-index: 0;
       filter: blur(0.1px);
     }
-
     .glass-card {
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(18px);
       border: 1px solid rgba(255, 255, 255, 0.18);
       box-shadow: 0 20px 45px rgba(21, 7, 30, 0.35);
     }
-
     .glass-card h2,
     .glass-card p,
     .glass-card span,
@@ -57,7 +52,6 @@
     .glass-card code {
       color: #fdf6ff;
     }
-
     .glass-card input[type="text"],
     .glass-card input[type="radio"],
     .glass-card input[type="checkbox"] {
@@ -65,29 +59,23 @@
       border-color: rgba(255, 255, 255, 0.3);
       color: #1a0027;
     }
-
     .glass-card input::placeholder {
       color: rgba(26, 0, 39, 0.55);
     }
-
     .glass-card button,
     .glass-card a {
       box-shadow: 0 10px 25px rgba(90, 29, 120, 0.35);
     }
-
     .glass-card a {
       color: #ffd4ff;
     }
-
     .glass-card .text-gray-500 { color: rgba(255, 245, 255, 0.75); }
     .glass-card .text-gray-600 { color: rgba(255, 245, 255, 0.85); }
     .glass-card .text-gray-800 { color: #fdf6ff; }
     .glass-card .text-gray-900 { color: #fdf6ff; }
-
     footer {
       color: rgba(255, 245, 255, 0.7);
     }
-
     .status-card {
       padding: 1rem 1.25rem;
       border-radius: 1rem;
@@ -99,21 +87,127 @@
       font-size: 0.95rem;
       line-height: 1.6;
     }
-
     .status-success {
       border-color: rgba(160, 255, 224, 0.6);
       box-shadow: 0 18px 40px rgba(70, 255, 209, 0.2);
       background: linear-gradient(135deg, rgba(22, 170, 140, 0.28), rgba(18, 26, 48, 0.35));
     }
-
     .status-info {
       background: linear-gradient(135deg, rgba(125, 90, 200, 0.32), rgba(22, 14, 40, 0.4));
     }
-
     .status-warn {
       border-color: rgba(255, 200, 140, 0.55);
       background: linear-gradient(135deg, rgba(255, 180, 120, 0.32), rgba(44, 16, 20, 0.45));
       box-shadow: 0 18px 42px rgba(255, 158, 120, 0.28);
+    }
+    .gift-button {
+      padding: 0.6rem 1.5rem;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, rgba(255, 165, 210, 0.95), rgba(255, 105, 180, 0.95));
+      color: #ffffff;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 15px 35px rgba(255, 120, 190, 0.38);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    .gift-button:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 18px 42px rgba(255, 130, 200, 0.45);
+      filter: brightness(1.05);
+    }
+    .gift-button:active {
+      transform: translateY(1px) scale(0.97);
+    }
+    .rose-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .rose-overlay.active {
+      opacity: 1;
+    }
+    .rose-overlay .rose {
+      position: absolute;
+      top: 110%;
+      left: var(--left, 50%);
+      width: 82px;
+      height: 82px;
+      margin-left: -41px;
+      background: radial-gradient(circle at 32% 28%, #ffe9f8 0%, #ffbfdc 38%, #ff8cc1 68%, #ff4b9d 100%);
+      border-radius: 50%;
+      filter: drop-shadow(0 12px 30px rgba(255, 120, 190, 0.4));
+      opacity: 0;
+      transform: translate3d(0, 0, 0) scale(var(--scale, 1));
+      animation: roseFloat var(--duration, 10s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    .rose-overlay .rose::before,
+    .rose-overlay .rose::after {
+      content: '';
+      position: absolute;
+      inset: 15%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 160, 210, 0.9) 45%, rgba(255, 95, 165, 0.95) 100%);
+      transform: rotate(25deg);
+      filter: blur(0.3px);
+    }
+    .rose-overlay .rose::after {
+      inset: 28%;
+      transform: rotate(-18deg);
+      background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.7) 0%, rgba(255, 170, 215, 0.95) 60%, rgba(255, 110, 178, 0.95) 100%);
+    }
+    .rose-overlay .petal {
+      position: absolute;
+      top: -10%;
+      left: var(--left, 50%);
+      width: 26px;
+      height: 38px;
+      margin-left: -13px;
+      background: radial-gradient(circle at 30% 20%, #fff5fb 0%, #ffc7e0 45%, #ff96c4 100%);
+      border-radius: 60% 40% 60% 40%;
+      opacity: 0;
+      transform: rotate(var(--rotate, 0deg)) scale(var(--scale, 1));
+      filter: drop-shadow(0 8px 14px rgba(255, 150, 205, 0.32));
+      animation: petalFall var(--duration, 8s) linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes roseFloat {
+      0% {
+        transform: translate3d(0, 0, 0) scale(var(--scale, 1)) rotate(0deg);
+        opacity: 0;
+      }
+      12% {
+        opacity: 1;
+      }
+      55% {
+        transform: translate3d(var(--drift, 45px), -55vh, 0) scale(var(--scale, 1)) rotate(18deg);
+      }
+      100% {
+        transform: translate3d(calc(var(--drift, 45px) * 1.4), -120vh, 0) scale(var(--scale, 1)) rotate(42deg);
+        opacity: 0;
+      }
+    }
+    @keyframes petalFall {
+      0% {
+        transform: translate3d(0, -8vh, 0) rotate(var(--rotate, 0deg)) scale(var(--scale, 1));
+        opacity: 0;
+      }
+      18% {
+        opacity: 1;
+      }
+      65% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--drift, 90px), 120vh, 0) rotate(calc(var(--rotate, 0deg) + 220deg)) scale(var(--scale, 1));
+        opacity: 0;
+      }
     }
   </style>
 </head>
@@ -124,26 +218,21 @@
       <h1 class="text-3xl font-bold tracking-tight drop-shadow-lg">🥮🌕 Challenge designed by Autumn God</h1>
       <p class="mt-1 opacity-80">Answer a few magic questions to 🪄 the content.</p>
     </header>
-
     <!-- Progress / Status -->
     <div id="status" class="mb-6 hidden"></div>
-
     <!-- Quiz Card -->
     <section id="quizCard" class="glass-card rounded-2xl p-5 space-y-6">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Verification</h2>
         <span id="progress" class="text-sm text-gray-500">0 / 0 correct</span>
       </div>
-
       <form id="quizForm" class="space-y-6"></form>
-
       <div class="flex items-center gap-3 pt-2">
         <button id="checkBtn" class="px-4 py-2 rounded-2xl bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed" type="button">Check answers</button>
         <button id="resetBtn" class="px-3 py-2 rounded-2xl bg-gray-200 text-gray-800 hover:bg-gray-300" type="button">Reset</button>
       </div>
       <p class="text-xs text-gray-500">Note: Your pass is cached on this device for convenience. Use “Reset” to clear it.</p>
     </section>
-
     <!-- Content Card (hidden until passed) -->
     <section id="contentCard" class="hidden mt-8 glass-card rounded-2xl overflow-hidden">
       <div class="flex items-center justify-between p-5 border-b">
@@ -154,13 +243,15 @@
         </div>
       </div>
       <article id="renderTarget" class="prose prose-gray px-5 py-6 max-w-none"></article>
+      <div class="px-5 pb-6 pt-4 border-t border-white/10 flex justify-end">
+        <button id="giftButton" class="gift-button hidden">不正经的礼物</button>
+      </div>
     </section>
-
     <footer class="mt-10 text-xs text-gray-500">
       <p>你好, oi!</p>
     </footer>
   </main>
-
+  <div id="roseOverlay" class="rose-overlay hidden"></div>
   <script>
     (function () {
       const canvas = document.getElementById('butterflyCanvas');
@@ -172,7 +263,6 @@
       let height = 0;
       const MAX_BUTTERFLIES = 48;
       const MAX_SPARKLES = 90;
-
       function resize() {
         const dpr = window.devicePixelRatio || 1;
         width = window.innerWidth;
@@ -184,7 +274,6 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
       }
-
       function createButterfly(seedY) {
         return {
           x: Math.random() * width,
@@ -198,7 +287,6 @@
           tint: Math.random()
         };
       }
-
       function createSparkle(seedY) {
         return {
           x: Math.random() * width,
@@ -209,7 +297,6 @@
           hueShift: Math.random()
         };
       }
-
       function initPopulation() {
         butterflies.length = 0;
         sparkles.length = 0;
@@ -220,7 +307,6 @@
           sparkles.push(createSparkle(Math.random() * height));
         }
       }
-
       function drawButterfly(b) {
         const flutter = Math.sin(b.life * b.wingFrequency);
         const flutterScale = b.scale * (1 + flutter * 0.25);
@@ -238,7 +324,6 @@
           gradient.addColorStop(0.45, 'rgba(255, 160, 210, 0.8)');
           gradient.addColorStop(1, 'rgba(180, 90, 200, 0.18)');
         }
-
         ctx.globalAlpha = 0.92;
         for (const dir of [-1, 1]) {
           ctx.save();
@@ -252,23 +337,19 @@
           ctx.fill();
           ctx.restore();
         }
-
         ctx.globalAlpha = 0.95;
         ctx.fillStyle = 'rgba(45, 8, 70, 0.9)';
         ctx.beginPath();
         ctx.ellipse(0, 0, 2.3 * flutterScale, 16 * flutterScale, 0, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.globalAlpha = 0.55;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.beginPath();
         ctx.ellipse(0, -6 * flutterScale, 1.5 * flutterScale, 3.6 * flutterScale, 0, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
         ctx.globalAlpha = 1;
       }
-
       function drawSparkle(s) {
         const twinkle = 0.25 + 0.35 * (1 + Math.sin(s.twinkle)) * 0.5;
         const alpha = 0.15 + twinkle * 0.55;
@@ -277,13 +358,11 @@
         ctx.arc(s.x, s.y, s.radius * (1 + twinkle * 0.8), 0, Math.PI * 2);
         ctx.fill();
       }
-
       let lastTime = 0;
       function animate(time) {
         const dt = Math.min((time - lastTime) / 1000 || 0, 0.032);
         lastTime = time;
         ctx.clearRect(0, 0, width, height);
-
         for (const s of sparkles) {
           s.y -= s.speed;
           s.twinkle += dt * 4;
@@ -293,7 +372,6 @@
           }
           drawSparkle(s);
         }
-
         for (const b of butterflies) {
           b.life += dt;
           b.y -= b.speed;
@@ -303,10 +381,8 @@
           }
           drawButterfly(b);
         }
-
         requestAnimationFrame(animate);
       }
-
       resize();
       initPopulation();
       requestAnimationFrame((time) => {
@@ -319,16 +395,13 @@
       });
     })();
   </script>
-
   <script>
     // ======== CONFIGURE HERE ========
     // 1) Put your Markdown content here. You can replace this string or fetch it dynamically.
     const MARKDOWN = `🧚‍♀️dxq🦋特典🎀\n# 国内篇\n## 1. 线下\n### 1.1 近距离线下——周末和平时可以去实验室\n1. 在自己所处的学校寻找老师（最寻常也最容易进入课题组）\n    1. 学校内\n    2. 和学校有合作关系的科研院所与机构的课题组\n2. 在所处学校所在的IP地的其他学校寻找课题组（因为离得近，而且可以周末全力线下投入科研实习）\n    1. 自己邮件联系，最好有一定的相关背景，比如自学过网上一些知名大学的公开课，有课程项目，或者之前加入过相关课题组以及参加过相关课题方向比较匹配的知名竞赛\n    2. 通过本校老师帮忙，认真上本校老师的专业课，积极与对方交流（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者先进本校老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 参加学术会议，在间隙积极与老师交流（不过一般老师比较忙，难找到机会），会后及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。\n### 1.2 远距离线下——暑假科研实习\n1. 申请各科研院所的官方暑研项目(北大，清华，中科大，西湖大学，中科院，北生所等等都有相关的项目)\n    1. 如果申请不上，也可以申请对应的暑期课程项目，在课程期间去相关课题组见识一下。\n2. 自行联系（注意询问是自己负责生活费还是对方补贴，同时询问是否会提供正式的访问学生ID卡）\n    1. 自己邮件联系，最好有一定的相关背景，比如自学过网上一些知名大学的公开课，有课程项目，或者之前加入过相关课题组以及参加过相关课题方向比较匹配的知名竞赛\n    2. 通过本校老师帮忙，认真上本校老师的专业课，积极与对方交流（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者先进本校老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 参加学术会议，在间隙积极与老师交流（不过一般老师比较忙，难找到机会），会后及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。\n## 2. 线上(将与国际篇放在一起讨论)\n\n\n# 国际篇\n## 1. 线下（一般不存在远距离线下，因为不符合签证规定，一般只能在提供签证支持的学校进行线下实习）\n### 1.1 日常版线下——周末和平时可以去实验室\n1. 报名该学校的访问交流项目\n    1. 一般如果是春学期（1月开始）的话，需要提前到秋学期刚开始（9-10月）就做交流项目的报名准备。也就是提前一个学期。\n    2. 具体材料要求根据学校有变化。\n    3. 可以查看对比一下自己报名与通过本科院校帮助报名的不同要求，有时候自己报名所需的要求会比通过本科院校报名还低。而且一般材料交齐报名了就都会被录取（毕竟国外学校通过学费创收）。\n    4. 有些项目来不及考英语成绩的话，可以提交托福或者多邻国代替。\n    5. BBSA项目收费是最低的，和本地人一个标准，其余基本都要3万美元一学期，相应的坏处是在公立学校进实验室有点麻烦。不过个人体验其实也不是特别麻烦，主要在于需要积极找感兴趣的教授交流。同时，我有同学去来哈佛交换，她也找不到老师愿意接受她，最后是靠国内老师（原来是哈佛的博士后）帮忙推荐实验室才进去的。\n6. 之前提到准备交流项目的申请材料，同时也可以开始给想去的学校的老师写邮件询问能否加入对方课题组了。这样你可以提前和对面实验室对接，一过去就可以进行研究，老师也会更愿意接受做课题时间长的学生。\n    1. 自己邮件联系，最好有一定的相关背景，做过相关的课题项目，或者掌握相关的课题组所需的技能。\n    2. 通过某个已经认识你的老师帮忙，认真上本校老师的专业课，或者积极与对方交流过（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者之前进过某个老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 在申请前参加过学术会议，在学术会议上与老师交流过（不过一般老师比较忙，难找到机会），会后有过及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。这时，你再发个邮件给老师说我从xxx会议上和你聊过，现在又来找你了，老师会挺愿意接受你的。\n    4. 选择想去的国外老师上的课，下课以后主动询问老师进组情况\n7. 注意：进课题组之前可能有以下几种情况：\n    1. 有考查与面试，比如完成项目做汇报再决定是否长期合作\n    2. 老师直接将你的信息推送给博士后，你自己和博士后商量项目\n    3. 你直接和老师对接项目（极少，需要珍惜）\n### 1.2 近距离线下——一直待在实验室（类似博士生的生活，不过可能更苦😆因为博士生至少还可以去学校上课摸鱼）\n1. 报名该学校的官方暑研项目（时间2个月）或者与该学校的老师自行联系暑研（时间为2个月～12个月都有可能协商）无论是哪种，都需要提前3-6个月和老师联系。因为需要办签证，很麻烦！\n    1. 自己邮件联系，最好有一定的相关背景，做过相关的课题项目，或者掌握相关的课题组所需的技能。\n    2. 通过某个已经认识你的老师帮忙，认真上本校老师的专业课，或者积极与对方交流过（因为老师只有熟悉你才会帮你，不然就是毁坏自己的学术声誉）。或者之前进过某个老师课题组进行实习帮忙。询问是否有相关人脉帮忙推荐。\n    3. 在申请前参加过学术会议，在线下或者线上学术会议上与老师交流过（不过一般老师比较忙，难找到机会），会后有过及时发邮件给老师介绍自己，表明自己对对方所讲研究的兴趣。这时，你再发个邮件给老师说我从xxx会议上和你聊过，现在又来找你了，老师会挺愿意接受你的。\n2. 香港的学校的暑研项目直接与博士录取挂钩。\n\n## 2. 线上（麻烦的在于目前对于数据管控比较严格）\n### 2.1 日常版线上\n1. 先报名任意学校的交流项目，再联系其他学校的老师询问是否能进行线上科研项目。方法同上。\n### 2.2 肉身在国内的线上\n1. 可以通过查阅各学校网站有无开放的线上项目，比如我以前就查到Stanford是有一个表格专门做这个事情的。https://docs.google.com/spreadsheets/d/1yDtCqr36_tMc85M6Usfg877KMoM6lde-E-i6PeW1Ziw/edit?gid=923159611#gid=923159611\n2. 自行联系 方法同上。有些老师的实验室官网上也会有写招募远程科研。举个🌰：https://bioinformatics.bwh.harvard.edu/join/\n`;
-
     // 2) Optional: expose a real download URL after pass (e.g., from Drive/S3).
     // Leave empty string to hide the button.
     const DOWNLOAD_URL_AFTER_PASS = ""; // e.g., "https://example.com/yourfile.pdf"
-
     // 3) Define your questions. Answers are *hashed* with SHA-256 to avoid plain-text answers in source.
     //    Use window.hashPlain('your answer') in DevTools to generate hashes with the same normalization as checks.
     //    Types: 'text' | 'single' (radio) | 'multiple' (checkbox)
@@ -371,11 +444,9 @@
         acceptAnySelection: true
       }
     ];
-
     // 4) Optional: gate by token in URL (e.g., you share /?token=abc123 to one person). If provided,
     //    we store it and require the same token to see the cached pass. Set to false to disable token gating.
     const REQUIRE_URL_TOKEN_TO_REUSE_PASS = true;
-
     // 5) Optional: push completed responses to a GitHub repo. Fill in these values (token requires repo write access).
     const GITHUB_UPLOAD_CONFIG = {
       owner: 'Casion151',
@@ -389,7 +460,6 @@
       token: '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' // personal access token; hard-coded for automatic uploads
     };
     // ======== END CONFIG ========
-
     // Allow setting GitHub token at runtime for safer local testing
     try {
       const storedToken = localStorage.getItem('quiz-gh-token');
@@ -409,7 +479,6 @@
       }
       return !!token;
     };
-
     const el = {
       quizCard: document.getElementById('quizCard'),
       contentCard: document.getElementById('contentCard'),
@@ -421,8 +490,10 @@
       status: document.getElementById('status'),
       downloadMdBtn: document.getElementById('downloadMdBtn'),
       downloadUrlBtn: document.getElementById('downloadUrlBtn'),
+      giftBtn: document.getElementById('giftButton'),
+      giftOverlay: document.getElementById('roseOverlay'),
     };
-
+    let giftDismissHandler = null;
     // Utilities
     const norm = (str) => str.trim().toLowerCase().replace(/\s+/g, ' ');
     const toHex = (buffer) => Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -431,21 +502,17 @@
       const hash = await crypto.subtle.digest('SHA-256', data);
       return toHex(hash);
     }
-
     // Dev helper: quickly generate an answer hash in console.
     window.hashPlain = async (s) => {
       const h = await sha256Hex(String(s));
       console.log(`SHA-256(${JSON.stringify(norm(String(s)))}) =`, h);
       return h;
     };
-
     // Token handling (optional)
     const url = new URL(location.href);
     const urlToken = url.searchParams.get('token') || '';
-
     // Local cache key
     const CACHE_KEY = 'quiz-gate-pass-v1';
-
     function readCache() {
       try {
         return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
@@ -457,35 +524,28 @@
     function clearCache() {
       localStorage.removeItem(CACHE_KEY);
     }
-
     // Attempt counters per question
     const attempts = new Map();
-
     // Render quiz
     function renderQuiz() {
       el.quizForm.innerHTML = '';
       let correctCount = 0;
       attempts.clear();
-
       QUESTIONS.forEach((q, idx) => {
         const field = document.createElement('fieldset');
         field.className = 'space-y-2';
         field.dataset.qid = q.id;
-
         const label = document.createElement('legend');
         label.className = 'font-medium flex items-center gap-2';
         label.innerHTML = `<span class="text-gray-800">${idx + 1}. ${q.prompt}</span>`;
         field.appendChild(label);
-
         const help = document.createElement('div');
         help.className = 'text-sm text-gray-500 hidden';
         help.id = `hint-${q.id}`;
         if (q.hint) help.textContent = q.hint;
         field.appendChild(help);
-
         const inputWrap = document.createElement('div');
         inputWrap.className = 'mt-1';
-
         if (q.type === 'text') {
           const input = document.createElement('input');
           input.type = 'text';
@@ -499,25 +559,20 @@
             const id = `${q.id}-${choice.id}`;
             const row = document.createElement('div');
             row.className = 'space-y-2';
-
             const optionLabel = document.createElement('label');
             optionLabel.className = 'flex items-center gap-3 rounded-xl border px-3 py-2 hover:bg-gray-50';
             optionLabel.setAttribute('for', id);
-
             const radio = document.createElement('input');
             radio.type = 'radio';
             radio.name = q.id;
             radio.id = id;
             radio.value = choice.id;
             radio.className = 'size-4';
-
             const text = document.createElement('span');
             text.textContent = choice.label;
-
             optionLabel.appendChild(radio);
             optionLabel.appendChild(text);
             row.appendChild(optionLabel);
-
             if (choice.allowCustom) {
               const customInput = document.createElement('input');
               customInput.type = 'text';
@@ -527,7 +582,6 @@
               customInput.disabled = true;
               row.appendChild(customInput);
             }
-
             inputWrap.appendChild(row);
           });
         }
@@ -536,25 +590,20 @@
             const id = `${q.id}-${choice.id}`;
             const row = document.createElement('div');
             row.className = 'space-y-2';
-
             const optionLabel = document.createElement('label');
             optionLabel.className = 'flex items-center gap-3 rounded-xl border px-3 py-2 hover:bg-gray-50';
             optionLabel.setAttribute('for', id);
-
             const cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.name = q.id;
             cb.id = id;
             cb.value = choice.id;
             cb.className = 'size-4';
-
             const text = document.createElement('span');
             text.textContent = choice.label;
-
             optionLabel.appendChild(cb);
             optionLabel.appendChild(text);
             row.appendChild(optionLabel);
-
             if (choice.allowCustom) {
               const customInput = document.createElement('input');
               customInput.type = 'text';
@@ -564,32 +613,25 @@
               customInput.disabled = true;
               row.appendChild(customInput);
             }
-
             inputWrap.appendChild(row);
           });
         }
-
         const feedback = document.createElement('div');
         feedback.id = `fb-${q.id}`;
         feedback.className = 'text-sm mt-2 h-5';
-
         field.appendChild(inputWrap);
         field.appendChild(feedback);
         el.quizForm.appendChild(field);
-
         attempts.set(q.id, 0);
       });
-
       // progress init
       el.progress.textContent = `0 / ${QUESTIONS.length} correct`;
     }
-
     function handleChoiceChange(event) {
       const target = event.target;
       if (!target || target.tagName !== 'INPUT') return;
       const fieldset = target.closest('fieldset');
       if (!fieldset) return;
-
       if (target.type === 'radio') {
         const customInputs = fieldset.querySelectorAll('input[data-custom-for]');
         customInputs.forEach(input => {
@@ -610,18 +652,15 @@
         }
       }
     }
-
     // Collect and check answers
     async function checkAnswers() {
       let correctCount = 0;
       const attemptAnswers = {};
-
       for (const q of QUESTIONS) {
         const feedback = document.getElementById(`fb-${q.id}`);
         const hintEl = document.getElementById(`hint-${q.id}`);
         let ok = false;
         let failReason = null;
-
         if (q.type === 'text') {
           const input = el.quizForm.querySelector(`input[name="${q.id}"]`);
           const val = input.value;
@@ -636,14 +675,12 @@
           const selectedChoice = selected ? q.choices.find(choice => choice.id === selected) || null : null;
           const customInput = sel ? el.quizForm.querySelector(`input[data-custom-for="${sel.id}"]`) : null;
           const customValue = customInput ? customInput.value.trim() : '';
-
           attemptAnswers[q.id] = {
             type: 'single',
             selectedOption: selected || null,
             selectedLabel: selectedChoice ? selectedChoice.label : null,
             customText: customValue || null
           };
-
           if (q.acceptAnySelection) {
             if (selectedChoice && selectedChoice.allowCustom) {
               ok = customValue.length > 0;
@@ -691,7 +728,6 @@
             attemptAnswers[q.id].customTexts = customTexts;
           }
           if (!selectedOptions.length) failReason = failReason || 'no-selection';
-
           if (q.acceptAnySelection) {
             if (selectedOptions.length && !customMissing) {
               ok = true;
@@ -721,7 +757,6 @@
             }
           }
         }
-
         if (ok) {
           correctCount++;
           feedback.textContent = '✔️ Correct';
@@ -738,28 +773,22 @@
           if (count >= 2 && hintEl && hintEl.textContent) hintEl.classList.remove('hidden');
         }
       }
-
       el.progress.textContent = `${correctCount} / ${QUESTIONS.length} correct`;
-
       if (correctCount === QUESTIONS.length) await onPassed(attemptAnswers);
     }
-
     // After pass
     async function onPassed(answers) {
       // Cache pass with timestamp and token (if required)
       const payload = { passedAt: Date.now(), token: urlToken || null };
       writeCache(payload);
-
       let statusMessage = 'Access granted';
       let statusKind = 'success';
-
       if (answers) {
         const submission = {
           timestamp: new Date().toISOString(),
           token: urlToken || null,
           answers
         };
-
         try {
           const result = await uploadResponseToGithub(submission);
           if (result === 'saved') {
@@ -774,28 +803,23 @@
           statusKind = 'warn';
         }
       }
-
       showStatus(statusMessage, statusKind);
       revealContent();
     }
-
     function showStatus(msg, kind = 'info') {
       el.status.classList.remove('hidden');
       const kindClass = kind === 'success' ? 'status-success' : kind === 'warn' ? 'status-warn' : 'status-info';
       el.status.className = `mb-6 status-card ${kindClass}`;
       el.status.textContent = msg;
     }
-
     function revealContent() {
       // Render Markdown -> HTML and sanitize
       const rawHtml = marked.parse(MARKDOWN);
       const safeHtml = DOMPurify.sanitize(rawHtml);
       el.renderTarget.innerHTML = safeHtml;
-
       // Toggle cards
       el.quizCard.classList.add('hidden');
       el.contentCard.classList.remove('hidden');
-
       // Download buttons
       el.downloadMdBtn.onclick = (e) => {
         e.preventDefault();
@@ -806,13 +830,71 @@
         document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(url);
       };
-
       if (DOWNLOAD_URL_AFTER_PASS) {
         el.downloadUrlBtn.classList.remove('hidden');
         el.downloadUrlBtn.href = DOWNLOAD_URL_AFTER_PASS;
       }
+      hideGiftEffect();
+      if (el.giftBtn) {
+        el.giftBtn.classList.remove('hidden');
+      }
     }
-
+    function hideGiftEffect() {
+      if (!el.giftOverlay) return;
+      el.giftOverlay.classList.remove('active');
+      el.giftOverlay.classList.add('hidden');
+      el.giftOverlay.innerHTML = '';
+      if (giftDismissHandler) {
+        document.removeEventListener('click', giftDismissHandler);
+        giftDismissHandler = null;
+      }
+    }
+    function showGiftEffect() {
+      if (!el.giftOverlay) return;
+      hideGiftEffect();
+      el.giftOverlay.classList.remove('hidden');
+      el.giftOverlay.classList.add('active');
+      const roseTotal = 14;
+      const petalTotal = 36;
+      for (let i = 0; i < roseTotal; i++) {
+        const rose = document.createElement('span');
+        rose.className = 'rose';
+        rose.style.left = `${Math.random() * 100}%`;
+        rose.style.setProperty('--scale', (0.75 + Math.random() * 0.6).toFixed(2));
+        rose.style.setProperty('--duration', `${8 + Math.random() * 4}s`);
+        rose.style.setProperty('--delay', `${Math.random() * 2}s`);
+        rose.style.setProperty('--drift', `${(Math.random() * 160 - 80).toFixed(0)}px`);
+        el.giftOverlay.appendChild(rose);
+      }
+      for (let i = 0; i < petalTotal; i++) {
+        const petal = document.createElement('span');
+        petal.className = 'petal';
+        petal.style.left = `${Math.random() * 100}%`;
+        petal.style.setProperty('--scale', (0.6 + Math.random() * 0.6).toFixed(2));
+        petal.style.setProperty('--duration', `${6 + Math.random() * 5}s`);
+        petal.style.setProperty('--delay', `${Math.random() * 3}s`);
+        petal.style.setProperty('--drift', `${(Math.random() * 200 - 100).toFixed(0)}px`);
+        petal.style.setProperty('--rotate', `${(Math.random() * 120 - 60).toFixed(1)}deg`);
+        el.giftOverlay.appendChild(petal);
+      }
+      giftDismissHandler = (evt) => {
+        if (evt && evt.target === el.giftBtn) return;
+        hideGiftEffect();
+      };
+      setTimeout(() => {
+        document.addEventListener('click', giftDismissHandler, { once: true });
+      }, 0);
+    }
+    function handleGiftBtnClick(event) {
+      event.stopPropagation();
+      if (!el.giftOverlay) return;
+      const isActive = !el.giftOverlay.classList.contains('hidden');
+      if (isActive) {
+        hideGiftEffect();
+      } else {
+        showGiftEffect();
+      }
+    }
     async function uploadResponseToGithub(submission) {
       const {
         owner,
@@ -825,12 +907,10 @@
         issueTitle,
         issueLabels
       } = GITHUB_UPLOAD_CONFIG;
-
       if (!owner || !repo || !token) {
         console.warn('GitHub upload skipped: missing owner, repo, or token.');
         return 'skipped';
       }
-
       const headers = {
         'Accept': 'application/vnd.github+json',
         'Authorization': `Bearer ${token}`,
@@ -838,7 +918,6 @@
       };
       const safeOwner = encodeURIComponent(owner);
       const safeRepo = encodeURIComponent(repo);
-
       if (mode === 'issue') {
         const titleBase = issueTitle || 'Quiz response';
         const timestamp = submission.timestamp || new Date().toISOString();
@@ -857,29 +936,23 @@
           body: issueBody
         };
         if (labelsPayload) issuePayload.labels = labelsPayload;
-
         const issueRes = await fetch(`https://api.github.com/repos/${safeOwner}/${safeRepo}/issues`, {
           method: 'POST',
           headers: { ...headers, 'Content-Type': 'application/json' },
           body: JSON.stringify(issuePayload)
         });
-
         if (!issueRes.ok) {
           throw new Error(`GitHub issue creation failed with status ${issueRes.status}`);
         }
-
         return 'saved';
       }
-
       if (!path) {
         console.warn('GitHub upload skipped: no target path provided for file mode.');
         return 'skipped';
       }
-
       const targetBranch = branch || 'main';
       const encodedPath = path.split('/').map(segment => encodeURIComponent(segment)).join('/');
       const apiUrl = `https://api.github.com/repos/${safeOwner}/${safeRepo}/contents/${encodedPath}`;
-
       let existingSha;
       let entries = [];
       const readRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(targetBranch)}`, { headers });
@@ -895,41 +968,37 @@
       } else if (readRes.status !== 404) {
         throw new Error(`GitHub read failed with status ${readRes.status}`);
       }
-
       entries.push(submission);
-
       const jsonText = JSON.stringify(entries, null, 2);
       const encodedBytes = new TextEncoder().encode(jsonText);
       const base64Content = btoa(Array.from(encodedBytes, byte => String.fromCharCode(byte)).join(''));
-
       const body = {
         message: commitMessage || 'Add quiz response',
         content: base64Content,
         branch: targetBranch
       };
       if (existingSha) body.sha = existingSha;
-
       const saveRes = await fetch(apiUrl, {
         method: 'PUT',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-
       if (!saveRes.ok) {
         throw new Error(`GitHub write failed with status ${saveRes.status}`);
       }
-
       return 'saved';
     }
-
     function resetAll() {
       clearCache();
+      hideGiftEffect();
       el.quizCard.classList.remove('hidden');
       el.contentCard.classList.add('hidden');
+      if (el.giftBtn) {
+        el.giftBtn.classList.add('hidden');
+      }
       renderQuiz();
       showStatus('Reset complete. Answers cleared on this device.', 'info');
     }
-
     // Try resume from cache
     function tryResume() {
       const cache = readCache();
@@ -943,12 +1012,11 @@
       revealContent();
       return true;
     }
-
     // Wire up
     el.quizForm.addEventListener('change', handleChoiceChange);
     el.checkBtn.addEventListener('click', checkAnswers);
     el.resetBtn.addEventListener('click', resetAll);
-
+    if (el.giftBtn) el.giftBtn.addEventListener('click', handleGiftBtnClick);
     // Init
     (function init() {
       renderQuiz();
